@@ -1,0 +1,61 @@
+<script type="text/javascript">
+var sock = null;
+var wsuri = 'ws://localhost:8080/ws';
+
+window.onload = function() {
+  console.log('onload');
+
+  sock = new WebSocket(wsuri);
+
+  sock.onopen = function() {
+    console.log('connected to ' + wsuri);
+  };
+
+  sock.onclose = function(e) {
+    console.log('connection closed (' + e.code + ')');
+  };
+
+  sock.onmessage = function(e) {
+    item = JSON.parse(e.data);
+    console.log('item received for url: ' + item.Url);
+    updateChecklist(item);
+  };
+};
+
+function send() {
+  var msg = document.getElementById('url').value;
+  sock.send(msg);
+}
+
+function updateChecklist(item) {
+  var li = document.getElementById(item.Url);
+  if (li) {
+    updateItem(li, item);
+  } else {
+    newItem(item);
+  }
+}
+
+function newItem(item) {
+  var li = document.createElement('li');
+  li.setAttribute('id', item.Url);
+  li.innerHTML = item.Url + ' ' + getStatusEmoji(item.Status);
+  document.getElementById('checklist').appendChild(li);
+}
+
+function updateItem(li, item) {
+  li.innerHTML = item.Url + ' ' + getStatusEmoji(item.Status);
+}
+
+function getStatusEmoji(status) {
+  return status ? '✅' : '❌';
+}
+</script>
+<h1>Check Website Every 5min</h1>
+<form action="#" onsubmit="send();return false">
+  <label>Check:</label>
+  <input id="url" type="url" name="url">
+  <input type="submit" value="go">
+</form>
+<ol id="checklist">
+</ol>
